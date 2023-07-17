@@ -31,7 +31,7 @@ def cmp_status(soup, status, link):
     status_tag = dl_tag.find(string='Status').parent.find_next_sibling('dd')
     status_card = status_tag.abbr.text
     if status_card not in status:
-        error_msg = (f'Несовпадающие статусы:',
+        error_msg = ('Несовпадающие статусы:',
                      f'{link}',
                      f'Статус в карточке: {status_card}',
                      f'Ожидаемые статусы: {status}')
