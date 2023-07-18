@@ -1,4 +1,3 @@
-import logging
 from http import HTTPStatus
 
 from bs4 import BeautifulSoup

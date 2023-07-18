@@ -7,8 +7,8 @@ import requests_cache
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import (MAIN_DOC_URL, PEP_DOC_URL, DOWNLOADS_DIR, LOGGING_PHRASE,
-                       EXPECTED_STATUS)
+from constants import (MAIN_DOC_URL, PEP_DOC_URL, DOWNLOADS_DIR,
+                       LOGGING_PHRASE, EXPECTED_STATUS)
 
 from exceptions import ParserFindTagException
 from outputs import control_output
@@ -59,9 +59,7 @@ def latest_versions(session):
 def download(session):
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     soup = get_soup(session, downloads_url)
-    pdf_a4_link = soup.select_one(
-        'table.docutils a[href$=pdf-a4\.zip]'
-    )['href']
+    pdf_a4_link = soup.select_one('table.docutils a[href$=pdf-a4\.zip]')['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
     DOWNLOADS_DIR.mkdir(exist_ok=True)
@@ -139,4 +137,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
