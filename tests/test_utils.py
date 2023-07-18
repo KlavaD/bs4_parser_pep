@@ -45,7 +45,7 @@ def test_get_response(mock_session):
             text='You are breathtaken',
             status_code=200
         )
-        got = utils.get_response(
+        got = utils.get_soup(
             mock_session,
             MAIN_DOC_URL + 'unexisting_page/'
         )

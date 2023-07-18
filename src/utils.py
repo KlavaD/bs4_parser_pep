@@ -1,39 +1,31 @@
 import logging
+from http import HTTPStatus
 
+from bs4 import BeautifulSoup
 from requests import RequestException
 
-from exceptions import ParserFindTagException
+from constants import LOGGING_PHRASE
+from exceptions import ParserFindTagException, UrlNotAvailable
 
 
-def get_response(session, url):
+def get_soup(session, url, encoding='utf-8'):
     try:
         response = session.get(url)
-        response.encoding = 'utf-8'
-        return response
+        response.encoding = encoding
+        if response.status_code != HTTPStatus.OK:
+            raise UrlNotAvailable(
+                f'URL не доступен, {response.status_code}, {response.reason}')
+        return BeautifulSoup(response.text, features='lxml')
     except RequestException:
-        logging.exception(
-            f'Возникла ошибка при загрузке страницы {url}',
-            stack_info=True
+        raise ConnectionError(
+            LOGGING_PHRASE['connection_error'].format(args=url)
         )
 
 
 def find_tag(soup, tag, attrs=None):
-    searched_tag = soup.find(tag, attrs=(attrs or {}))
+    searched_tag = soup.find(tag, attrs=attrs if attrs is not None else {})
     if searched_tag is None:
-        error_msg = f'Не найден тег {tag} {attrs}'
-        logging.error(error_msg, stack_info=True)
-        raise ParserFindTagException(error_msg)
+        raise ParserFindTagException(
+            'Не найден тег {tag} {attrs}'.format(tag=tag, attrs=attrs)
+        )
     return searched_tag
-
-
-def cmp_status(soup, status, link):
-    dl_tag = find_tag(soup, 'dl', {'class': 'rfc2822 field-list simple'})
-    status_tag = dl_tag.find(string='Status').parent.find_next_sibling('dd')
-    status_card = status_tag.abbr.text
-    if status_card not in status:
-        error_msg = ('Несовпадающие статусы:',
-                     f'{link}',
-                     f'Статус в карточке: {status_card}',
-                     f'Ожидаемые статусы: {status}')
-        logging.error(error_msg)
-    return status_card
