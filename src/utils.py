@@ -1,10 +1,12 @@
-from http import HTTPStatus
-
 from bs4 import BeautifulSoup
 from requests import RequestException
 
-from constants import LOGGING_PHRASE
-from exceptions import ParserFindTagException, UrlNotAvailable
+from exceptions import ParserFindTagException
+
+LOGGING_CONNECTION_ERROR = (
+    'Возникла ошибка при загрузке страницы {args} {error}'
+)
+LOGGING_TAG_ERROR = 'Не найден тег {tag} {attrs}'
 
 
 def get_response(session, url, encoding='utf-8'):
@@ -12,24 +14,20 @@ def get_response(session, url, encoding='utf-8'):
         response = session.get(url)
         response.encoding = encoding
         return response
-    except RequestException:
+    except RequestException as error:
         raise ConnectionError(
-            LOGGING_PHRASE['connection_error'].format(args=url)
+            LOGGING_CONNECTION_ERROR.format(args=url, error=error)
         )
 
 
-def get_soup(session, url):
-    response = get_response(session, url)
-    if response.status_code != HTTPStatus.OK:
-        raise UrlNotAvailable(
-            f'URL не доступен, {response.status_code}, {response.reason}')
-    return BeautifulSoup(response.text, features='lxml')
+def get_soup(session, url, features='lxml'):
+    return BeautifulSoup(get_response(session, url).text, features=features)
 
 
 def find_tag(soup, tag, attrs=None):
     searched_tag = soup.find(tag, attrs=attrs if attrs is not None else {})
     if searched_tag is None:
         raise ParserFindTagException(
-            'Не найден тег {tag} {attrs}'.format(tag=tag, attrs=attrs)
+            LOGGING_TAG_ERROR.format(tag=tag, attrs=attrs)
         )
     return searched_tag

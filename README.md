@@ -1,10 +1,10 @@
 # Проект парсинг документов PEP
 
-Проект создавала - 
-* ###  [Клавдия Дунаева](https://www.t.me/klodunaeva)
+Автор - 
+*   [Клавдия Дунаева](https://www.t.me/klodunaeva)
 
 
-**В данном проекте 4 парсера:**
+**4 парсера:**
 
 * whats-new:
 
@@ -26,8 +26,13 @@
 
 **Инструменты и стек:**
 
-Python, Кеширование, Прогресс-бар, BeautifulSoup, регулярные выражения,
-PrettyTable, вывод данных в файл, логирование
+Python 3.7+, 
+[requests-cache](https://requests-cache.readthedocs.io/en/latest/user_guide.html),
+[tqdm](https://github.com/tqdm/tqdm),
+[BeautifulSoup 4](https://beautiful-soup-4.readthedocs.io/en/latest/#), 
+[PrettyTable 3.8.0](https://pypi.org/project/prettytable/),
+[argparse](https://docs.python.org/3/library/argparse.html),
+вывод данных в файл (библиотека [csv](https://docs.python.org/3/library/csv.html)),
 
 **Как запустить проект:**
 
@@ -92,4 +97,8 @@ python main.py download --output pretty
 ... в файл с очисткой кеша: 
 ```
 python main.py ... --output file -c
+```
+Получить справку о командах: 
+```
+python main.py -h
 ```
