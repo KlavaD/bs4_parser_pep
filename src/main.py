@@ -29,17 +29,12 @@ ERROR_STATUS_MESSAGE = ('Несовпадающие статусы: {link}'
 
 def whats_new(session):
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    soup = get_soup(session, whats_new_url)
-    sections_by_python = soup.select(
-        '#what-s-new-in-python div.toctree-wrapper li.toctree-l1')
-    # a_tags = get_soup(session, whats_new_url).select(
-    #     '#what-s-new-in-python div.toctree-wrapper li.toctree-l1 a')
+    a_tags = get_soup(session, whats_new_url).select(
+        '#what-s-new-in-python div.toctree-wrapper li.toctree-l1 > a')
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
     url_errors = []
-    # for a_tag in tqdm(a_tags):
-    for section in tqdm(sections_by_python):
-        version_a_tag = find_tag(section, 'a')
-        href = version_a_tag['href']
+    for a_tag in tqdm(a_tags):
+        href = a_tag['href']
         version_link = urljoin(whats_new_url, href)
         try:
             soup = get_soup(session, version_link)
