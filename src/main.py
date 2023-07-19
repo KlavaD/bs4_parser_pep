@@ -58,7 +58,9 @@ def latest_versions(session):
 def download(session):
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     soup = get_soup(session, downloads_url)
-    pdf_a4_link = soup.select_one('table.docutils a[href$="pdf-a4.zip"]')['href']
+    pdf_a4_link = soup.select_one(
+        'table.docutils a[href$="pdf-a4.zip"]'
+    )['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
     downloads_dir = BASE_DIR / 'downloads'
