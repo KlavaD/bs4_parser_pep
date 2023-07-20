@@ -33,6 +33,7 @@ Python 3.7+,
 [PrettyTable 3.8.0](https://pypi.org/project/prettytable/),
 [argparse](https://docs.python.org/3/library/argparse.html)
 
+
 **Как запустить проект:**
 
 Клонировать репозиторий и перейти в него в командной строке:
