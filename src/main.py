@@ -9,7 +9,7 @@ from tqdm import tqdm
 from configs import configure_argument_parser, configure_logging
 from constants import (
     MAIN_DOC_URL, PEP_DOC_URL,
-    EXPECTED_STATUS, BASE_DIR
+    EXPECTED_STATUS, BASE_DIR, DOWNLOAD_DIR
 )
 from exceptions import ParserFindTagException
 from outputs import control_output
@@ -19,7 +19,7 @@ LOGGING_START = 'Парсер запущен!'
 LOGGING_FINISH = 'Парсер завершил работу.'
 LOGGING_COMMAND_ARGS = 'Аргументы командной строки: {args}'
 LOGGING_DOWNLOAD = 'Архив был загружен и сохранён: {args}'
-LOGGING_ERROR = 'Сбой в работе программы {args}'
+LOGGING_ERROR = 'Сбой в работе программы {error}'
 LOGGING_PYTHON_VERSION = 'Не найден список с версиями Python'
 ERROR_STATUS_MESSAGE = (
     'Несовпадающие статусы: {link}'
@@ -31,7 +31,7 @@ ERROR_STATUS_MESSAGE = (
 def whats_new(session):
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
     a_tags = get_soup(session, whats_new_url).select(
-        '#what-s-new-in-python div.toctree-wrapper li.toctree-l1 > a')
+        '#what-s-new-in-python > div.toctree-wrapper li.toctree-l1 > a')
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
     logs = []
     for a_tag in tqdm(a_tags):
@@ -45,11 +45,15 @@ def whats_new(session):
                 find_tag(soup, 'dl').text.replace('\n', ' ')
             ))
         except ConnectionError as error:
-            logs.append('{error}'.format(error=error))
+            logs.append(
+                LOGGING_ERROR.format(
+                    error=error
+                )
+            )
         except ParserFindTagException as error:
-            logs.append('{error}'.format(error=error))
-    for log in logs:
-        logging.error(log)
+            logs.append(LOGGING_ERROR.format(error=error))
+    if len(logs) > 0:
+        logging.error('\n'.join(logs))
     return results
 
 
@@ -82,7 +86,7 @@ def download(session):
     )['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
-    downloads_dir = BASE_DIR / 'downloads'
+    downloads_dir = BASE_DIR / DOWNLOAD_DIR
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
@@ -120,11 +124,11 @@ def pep(session):
                         ))
                 count_status_peps[status_card] += 1
             except ConnectionError as error:
-                logs.append('{error}'.format(error=error))
+                logs.append(LOGGING_ERROR.format(error=error))
             except ParserFindTagException as error:
-                logs.append('{error}'.format(error=error))
-    for log in logs:
-        logging.error(log)
+                logs.append(LOGGING_ERROR.format(error=error))
+    if len(logs) > 0:
+        logging.error('\n'.join(logs))
     return [
         ('Статус', 'Количество'),
         *count_status_peps.items(),
@@ -156,7 +160,7 @@ def main():
             control_output(results, args)
     except Exception as error:
         logging.exception(
-            LOGGING_ERROR.format(args=error)
+            LOGGING_ERROR.format(error=error)
         )
     logging.info(LOGGING_FINISH)
 
