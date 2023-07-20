@@ -31,8 +31,7 @@ Python 3.7+,
 [tqdm](https://github.com/tqdm/tqdm),
 [BeautifulSoup 4](https://beautiful-soup-4.readthedocs.io/en/latest/#), 
 [PrettyTable 3.8.0](https://pypi.org/project/prettytable/),
-[argparse](https://docs.python.org/3/library/argparse.html),
-вывод данных в файл (библиотека [csv](https://docs.python.org/3/library/csv.html)),
+[argparse](https://docs.python.org/3/library/argparse.html)
 
 **Как запустить проект:**
 

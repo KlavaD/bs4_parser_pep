@@ -20,11 +20,12 @@ LOGGING_FINISH = 'Парсер завершил работу.'
 LOGGING_COMMAND_ARGS = 'Аргументы командной строки: {args}'
 LOGGING_DOWNLOAD = 'Архив был загружен и сохранён: {args}'
 LOGGING_ERROR = 'Сбой в работе программы {args}'
-DOWNLOADS_DIR = BASE_DIR / 'downloads'
-ERROR_STATUS_MESSAGE = ('Несовпадающие статусы: {link}'
-                        ' Статус в карточке: {status_card} '
-                        'Ожидаемые статусы: {status}'
-                        )
+LOGGING_PYTHON_VERSION = 'Не найден список с версиями Python'
+ERROR_STATUS_MESSAGE = (
+    'Несовпадающие статусы: {link}'
+    ' Статус в карточке: {status_card} '
+    'Ожидаемые статусы: {status}'
+)
 
 
 def whats_new(session):
@@ -32,7 +33,7 @@ def whats_new(session):
     a_tags = get_soup(session, whats_new_url).select(
         '#what-s-new-in-python div.toctree-wrapper li.toctree-l1 > a')
     results = [('Ссылка на статью', 'Заголовок', 'Редактор, Автор')]
-    url_errors = []
+    logs = []
     for a_tag in tqdm(a_tags):
         href = a_tag['href']
         version_link = urljoin(whats_new_url, href)
@@ -43,10 +44,12 @@ def whats_new(session):
                 find_tag(soup, 'h1').text,
                 find_tag(soup, 'dl').text.replace('\n', ' ')
             ))
-        except Exception as error:
-            url_errors.append('{error}'.format(error=error))
-    if len(url_errors) > 0:
-        logging.error(url_errors)
+        except ConnectionError as error:
+            logs.append('{error}'.format(error=error))
+        except ParserFindTagException as error:
+            logs.append('{error}'.format(error=error))
+    for log in logs:
+        logging.error(log)
     return results
 
 
@@ -59,8 +62,7 @@ def latest_versions(session):
             a_tags = ul.find_all('a')
             break
     else:
-        raise ParserFindTagException(
-            'Не найден список с версиями Python')
+        raise ParserFindTagException(LOGGING_PYTHON_VERSION)
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
@@ -92,10 +94,8 @@ def download(session):
 def pep(session):
     soup = get_soup(session, PEP_DOC_URL)
     count_status_peps = defaultdict(int)
-    tbody_tags = soup.select('#index-by-category tbody')
-    error_status_message = []
-    url_errors = []
-    for tbody in tqdm(tbody_tags):
+    logs = []
+    for tbody in tqdm(soup.select('#index-by-category tbody')):
         tr_tags = tbody.find_all('tr')
         for tr in tr_tags:
             status = tr.find('abbr').text[1:]
@@ -112,19 +112,19 @@ def pep(session):
                     'dd')
                 status_card = status_tag.abbr.text
                 if status_card not in EXPECTED_STATUS[status]:
-                    error_status_message.append(
+                    logs.append(
                         ERROR_STATUS_MESSAGE.format(
                             link=pep_link,
                             status_card=status_card,
                             status=EXPECTED_STATUS[status]
                         ))
                 count_status_peps[status_card] += 1
-            except Exception as error:
-                url_errors.append('{error}'.format(error=error))
-    if len(url_errors) > 0:
-        logging.error(url_errors)
-    if len(error_status_message):
-        logging.error(error_status_message)
+            except ConnectionError as error:
+                logs.append('{error}'.format(error=error))
+            except ParserFindTagException as error:
+                logs.append('{error}'.format(error=error))
+    for log in logs:
+        logging.error(log)
     return [
         ('Статус', 'Количество'),
         *count_status_peps.items(),

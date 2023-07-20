@@ -4,7 +4,7 @@ from requests import RequestException
 from exceptions import ParserFindTagException
 
 LOGGING_CONNECTION_ERROR = (
-    'Возникла ошибка при загрузке страницы {args} {error}'
+    'Возникла ошибка при загрузке страницы {url} {error}'
 )
 LOGGING_TAG_ERROR = 'Не найден тег {tag} {attrs}'
 
@@ -16,7 +16,7 @@ def get_response(session, url, encoding='utf-8'):
         return response
     except RequestException as error:
         raise ConnectionError(
-            LOGGING_CONNECTION_ERROR.format(args=url, error=error)
+            LOGGING_CONNECTION_ERROR.format(url=url, error=error)
         )
 
 
