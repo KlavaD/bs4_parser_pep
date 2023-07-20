@@ -14,7 +14,7 @@ def get_response(session, url, encoding='utf-8'):
         response = session.get(url)
         response.encoding = encoding
         return response
-    except RequestException :
+    except RequestException:
         raise ConnectionError(
             LOGGING_CONNECTION_ERROR.format(url=url)
         )
